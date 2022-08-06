@@ -1,53 +1,49 @@
 import styled from "styled-components";
-import { useState} from 'react';
+import { useState, useContext} from 'react';
+import UserContext from "../context/UserContext";
 import { useNavigate } from "react-router-dom";
-import axios from "axios"
+import axios from "axios";
 import  {InfinitySpin}  from  'react-loader-spinner'
+import Header from "../components/Header";
 
-export default function Signup(){
+export default function Signin(){
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
-    const [name, setName] = useState("")
-    const [confirmPassword, setConfirmPassword] = useState("")
+    const { user, setUser } = useContext(UserContext);
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false)
     let loadingAnimation = <InfinitySpin width='200' color="#FFFFFF" />
 
-    function buttonSuccess(name, email, password, confirmPassword, navigate) {
-
+    function buttonSuccess(email, password, user, setUser, navigate) {
         console.log(password)
-        let data = {    
-            name: name,
-            email: email,
-            password: password,
-            confirmPassword: confirmPassword
-                    };
+
+        let data = { email: email, password: password};
         console.log(data)
         const requisicaoPost = axios.post(
-          "http://localhost:4001/signup",
+          "https://back-projeto-16-shortly.herokuapp.com/signin",
           data
         );
         setLoading(true)
-        requisicaoPost.then(() => {
-          navigate("/signin");
-          
+        requisicaoPost.then((response) => {
+            setUser(response.data);
+            navigate("/");
         });
-        requisicaoPost.catch((error) => {
-            alert(error.response.data)
+        requisicaoPost.catch((error) => {alert(error.response.data)
             setLoading(false)
-        });
+        })
     }
 
     return(
         <>
-            <Container onSubmit={(e) => buttonSuccess(name, email, password, confirmPassword, navigate,e.preventDefault())}>
-                <p>Shortly 🩳</p>
-                <input type="text"  placeholder="Nome" value ={name} onChange={(e) => setName(e.target.value)} required/>
+            <Container onSubmit={(e) => buttonSuccess(email, password, user, setUser, navigate, e.preventDefault())}>
+                <Header/>
+                <Title><p>Shortly </p><h2>🩳</h2></Title>
+
                 <input type="text"  placeholder="E-mail" value ={email} onChange={(e) => setEmail(e.target.value)} required/>
                 <input type="password"  placeholder="Senha" value={password} onChange={(e) => setPassword(e.target.value)} required/>
-                <input type="password"  placeholder="Confirmar senha" value ={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required/>
 
-                <button type = "submit"> {loading ? loadingAnimation : 'Criar Conta'}</button>
+
+                <button type = "submit"> {loading ? loadingAnimation : 'Entrar'}</button>
                 
             </Container>
         </>
@@ -55,11 +51,11 @@ export default function Signup(){
 }
 
             const Container = styled.form `
-            font-family: 'Lexand Deca', sans-serif;
+            font-family: 'Lexend Deca', sans-serif;
             display:flex;
             flex-direction: column;
             align-items: center;
-            background-color: #E5E5E5;
+            background-color: #FFFFFF;
            
             height: 100vh;
             width: 100vw;
@@ -73,25 +69,29 @@ export default function Signup(){
             box-shadow: 0px 4px 24px rgba(120, 177, 89, 0.12);
             border-radius: 12px;
             padding-left: 20px;
+            font-family: 'Lexend Deca', sans-serif;
             }
 
             p{
-                font-family: 'Lexand Deca', sans-serif;
+                font-family: 'Lexend Deca', sans-serif;
                 font-size: 64px;
-                margin-top: 96px;
-                margin-bottom: 140px;
+                font-weight:200;
             }
 
-            placeholder::{
+            h2{
+                font-size: 100px;
+            }
+
+            ::placeholder{
                 font-size: 20px;
-                color: #DBDBDB;
-               
+                color: #9c9c9c;
+                font-family: 'Lexend Deca', sans-serif;
             }
             button{
                 width:182px;
                 height: 60px;
                 background-color:#5D9040;
-                border-radius: 5px;
+                border-radius: 12px;
                 border:0;
                 font-size: 14px;
                 font-weight: 700;
@@ -101,6 +101,7 @@ export default function Signup(){
                 justify-content:center;
                 align-items: center;
                 margin-top: 60px;
+                font-family: 'Lexend Deca', sans-serif;
             }
 
             h1{
@@ -108,4 +109,12 @@ export default function Signup(){
                 color: #FFFFFF;
                 font-weight: 700;
             }
+`
+const Title = styled.div`
+          display:flex;
+          justify-content:center;
+          align-items:center;
+          text-align:center;
+          margin-bottom: 140px;
+          margin-top: 96px;
 `

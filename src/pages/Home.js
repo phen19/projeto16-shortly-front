@@ -1,12 +1,13 @@
-import UserContext from "./UserContext";
+import UserContext from "../context/UserContext";
 import { useState, useContext, useEffect} from 'react';
 import styled from "styled-components";
 import axios from "axios";
-import trash from './img/Vector(1).png'
+import trash from "../assets/img/Vector(1).png";
+import Header from "../components/Header.js";
 
 export default function Home(){
-    const { user, setUser } = useContext(UserContext);
-    const [userName,setUserName] = useState("")
+    const { user} = useContext(UserContext);
+    const {setUserName} = useContext(UserContext)
     const [userUrls, setUserUrls] = useState([]);
     const [url, setUrl] = useState("");
     const [refreshAxios, setRefreshAxios] = useState(false)
@@ -18,7 +19,7 @@ export default function Home(){
 
       useEffect(() => {
         if (user !== undefined) {
-        const requisicao = axios.get("http://localhost:4001/users/me", config);
+        const requisicao = axios.get("https://back-projeto-16-shortly.herokuapp.com/users/me", config);
         requisicao.then((response) =>{
                 setUserName(response.data.name);
                 setUserUrls(response.data.shortenedUrls)
@@ -32,7 +33,7 @@ export default function Home(){
             <>
             <div className="line">
             <div className="userUrls">
-                    <h1>{url}</h1> <h1 onClick={()=> goToUrl({shortUrl})}>{shortUrl}</h1> <h1>Quantidade de visitantes: {visitCount}</h1>
+                    <h1>{url}</h1> <h1 style={{cursor:"pointer"}}onClick={()=> goToUrl(shortUrl)}>{shortUrl}</h1> <h1>Quantidade de visitantes: {visitCount}</h1>
             </div>
             <div className="delete"> <img src={trash} alt="" onClick={() => removeUrl({id})}/></div>
             </div>
@@ -43,7 +44,7 @@ export default function Home(){
     function removeUrl({id}){
         const confirm = window.confirm(`Tem certeza que quer excluir este link?`)
         if(confirm){
-            axios.delete(`http://localhost:4001/urls/${id}`, {
+            axios.delete(`https://back-projeto-16-shortly.herokuapp.com/urls/${id}`, {
                 headers: {
                     "Authorization": `Bearer ${user.token}`
                   }
@@ -56,12 +57,15 @@ export default function Home(){
         }
     }
 
-    function goToUrl({shortUrl}){
-        const requisicao = axios.get(`http://localhost:4001/urls/open/${shortUrl}`);
+    function goToUrl(shortUrl){
+        const requisicao = axios.get(`https://back-projeto-16-shortly.herokuapp.com/urls/open/${shortUrl}`);
         requisicao.then((response) =>{
-            window.open(response.data.url.split('to ')[1], "_blank")
+            window.open(response.data.split('to ')[1], "_blank")
             setRefreshAxios(!refreshAxios)
-        });
+        }).catch((err => {
+            console.error('deu ruim')
+            console.error(err)
+        }));
 
     }
 
@@ -70,7 +74,7 @@ export default function Home(){
 
         let data = { url:url};
         console.log(data)
-        const requisicaoPost = axios.post("http://localhost:4001/urls/shorten", data, config);
+        const requisicaoPost = axios.post("https://back-projeto-16-shortly.herokuapp.com/urls/shorten", data, config);
         //setLoading(true)
         requisicaoPost.then((response) => {
             setUrl("");
@@ -81,11 +85,33 @@ export default function Home(){
         })
     }
 
+    console.log(userUrls.id)
+
+    if(userUrls.length === 1 && userUrls[0].id === null){
+        return(       
+        <>
+        
+            <Container onSubmit={(e) => buttonSuccess(url, e.preventDefault())}>
+            <Header />
+            <Title><p>Shortly </p><h2>🩳</h2></Title>
+                <form>
+                <div className="shorten">
+                <input type="text" name="URL" placeholder="Links que cabem no bolso"  value= {url} onChange={(e) => setUrl(e.target.value)} required />
+                <button type="submit">Encurtar Link</button> </div>
+                </form>
+                <div className="urls"> Você não tem links encurtados. Insira um acima!</div>
+            </Container>
+            
+        </>
+
+        )
+    }
     return (
         <>
-        <p> olá {userName}</p>
+        
         <Container onSubmit={(e) => buttonSuccess(url, e.preventDefault())}>
-            <p>Shortly 🩳</p>
+        <Header />
+        <Title><p>Shortly </p><h2>🩳</h2></Title>
             <form>
             <div className="shorten">
             <input type="text" name="URL" placeholder="Links que cabem no bolso"  value= {url} onChange={(e) => setUrl(e.target.value)} required />
@@ -102,12 +128,12 @@ export default function Home(){
 }
 
 const Container = styled.div `
-            font-family: 'Lexand Deca', sans-serif;
+            font-family: 'Lexend Deca', sans-serif;
             display:flex;
             flex-direction: column;
             align-items: center;
-            background-color: #E5E5E5;
-           
+            background-color: #FFFFFF;
+            box-sizing: border-box;
             height: 100vh;
             width: 100vw;
 
@@ -123,22 +149,25 @@ const Container = styled.div `
             }
 
             p{
-                font-family: 'Lexand Deca', sans-serif;
+                font-family: 'Lexend Deca', sans-serif;
                 font-size: 64px;
-                margin-top: 96px;
-                margin-bottom: 140px;
+                font-weight: 200;
             }
 
-            placeholder::{
-                font-size: 20px;
-                color: #DBDBDB;
-               
+            h2{
+                font-size: 100px;
+            }
+
+            .shorten > ::placeholder{
+                font-size: 14px;
+                color: #9C9C9C;
+                font-weight: 400;
             }
             button{
                 width:182px;
                 height: 60px;
                 background-color:#5D9040;
-                border-radius: 5px;
+                border-radius: 12px;
                 border:0;
                 font-size: 14px;
                 font-weight: 700;
@@ -152,6 +181,7 @@ const Container = styled.div `
             h1{
                 color: #FFFFFF;
                 font-weight: 400;
+                font-size:14px;
             }
 
             .shorten{
@@ -187,6 +217,10 @@ const Container = styled.div `
                 font-size:14px;
             }
 
+            .userUrls>h1:nth-child(2):hover{
+                text-decoration: underline;
+            }
+
             .delete{
                 width:130px;
                 background-color: #FFFFFF;
@@ -195,6 +229,7 @@ const Container = styled.div `
                 justify-content: center;
                 border-radius: 0px 12px 12px 0px;
                 box-shadow: 0px 4px 24px rgba(120, 177, 89, 0.12);
+                border: 1px solid rgba(120, 177, 89, 0.25);
             }
 
             .delete>img{
@@ -205,4 +240,14 @@ const Container = styled.div `
                 heigth: 100px;
                 overflow:scroll;
             }
+`
+
+const Title = styled.div`
+          display:flex;
+          justify-content:center;
+          align-items:center;
+          text-align:center;
+          margin-bottom: 140px;
+          margin-top: 96px;
+          box-sizing:border-box;
 `
