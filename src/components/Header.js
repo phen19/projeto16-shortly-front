@@ -21,15 +21,14 @@ export default function Header(){
     useEffect(() => {
         if (location.pathname === "/signup") {
             setColorSignUp("#5D9040")
+            return
         }
         
-        if(location.pathname === "/" ||  location.pathname === "/signin" ||  location.pathname === "/ranking"){
+     
             setColorSignIn("#5D9040")
-        }
+        
 
     },[]);
-
-    console.log(colorSignIn)
 
 
     if(userName!== ""){

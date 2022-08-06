@@ -19,16 +19,16 @@ export default function Signin(){
 
         let data = { email: email, password: password};
         console.log(data)
-        const requisicaoPost = axios.post(
+        const request = axios.post(
           "https://back-projeto-16-shortly.herokuapp.com/signin",
           data
         );
         setLoading(true)
-        requisicaoPost.then((response) => {
+        request.then((response) => {
             setUser(response.data);
             navigate("/");
         });
-        requisicaoPost.catch((error) => {alert(error.response.data)
+        request.catch((error) => {alert(error.response.data)
             setLoading(false)
         })
     }

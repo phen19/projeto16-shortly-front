@@ -4,13 +4,30 @@ import styled from "styled-components";
 import axios from "axios";
 import trash from "../assets/img/Vector(1).png";
 import Header from "../components/Header.js";
+import { Link, useNavigate } from "react-router-dom";
+import  {InfinitySpin, Oval}  from  'react-loader-spinner'
 
 export default function Home(){
-    const { user} = useContext(UserContext);
-    const {setUserName} = useContext(UserContext)
+    const {user, setUserName, setInfo} = useContext(UserContext)
     const [userUrls, setUserUrls] = useState([]);
     const [url, setUrl] = useState("");
+    const [loading, setLoading] = useState(false)
+    const [loadingGet, setLoadingGet] = useState(true)
+    let loadingAnimation = <InfinitySpin width='200' color="#FFFFFF" />
+    let loadingAnimation2 = <Oval
+    height={80}
+    width={80}
+    color="#4fa94d"
+    wrapperStyle={{}}
+    wrapperClass=""
+    visible={true}
+    ariaLabel='oval-loading'
+    secondaryColor="#4fa94d"
+    strokeWidth={2}
+    strokeWidthSecondary={2}/>
+
     const [refreshAxios, setRefreshAxios] = useState(false)
+    const navigate = useNavigate();
     const config = {
         headers: {
             "Authorization": `Bearer ${user.token}` //Padrão da API (Bearer Authentication)
@@ -19,10 +36,11 @@ export default function Home(){
 
       useEffect(() => {
         if (user !== undefined) {
-        const requisicao = axios.get("https://back-projeto-16-shortly.herokuapp.com/users/me", config);
-        requisicao.then((response) =>{
+        const request = axios.get("https://back-projeto-16-shortly.herokuapp.com/users/me", config);
+        request.then((response) =>{
                 setUserName(response.data.name);
                 setUserUrls(response.data.shortenedUrls)
+                setLoadingGet(false)
         })};
 
     },[refreshAxios, user]);
@@ -32,10 +50,10 @@ export default function Home(){
         return(
             <>
             <div className="line">
-            <div className="userUrls">
-                    <h1>{url}</h1> <h1 style={{cursor:"pointer"}}onClick={()=> goToUrl(shortUrl)}>{shortUrl}</h1> <h1>Quantidade de visitantes: {visitCount}</h1>
+            <div className="userUrls" onClick={()=> urlInfo(id, visitCount)}>
+                    <h1 >{url}</h1> <h1>{shortUrl}</h1> <h1>Quantidade de visitantes: {visitCount}</h1>
             </div>
-            <div className="delete"> <img src={trash} alt="" onClick={() => removeUrl({id})}/></div>
+            <div className="delete" onClick={() => removeUrl({id})}> <img src={trash} alt="trash"/></div>
             </div>
             </>
         )
@@ -57,31 +75,29 @@ export default function Home(){
         }
     }
 
-    function goToUrl(shortUrl){
-        const requisicao = axios.get(`https://back-projeto-16-shortly.herokuapp.com/urls/open/${shortUrl}`);
-        requisicao.then((response) =>{
-            window.open(response.data.split('to ')[1], "_blank")
-            setRefreshAxios(!refreshAxios)
-        }).catch((err => {
-            console.error('deu ruim')
+    function urlInfo(id, visitCount){
+        const request = axios.get(`https://back-projeto-16-shortly.herokuapp.com/urls/${id}`);
+        request.then((response) =>{
+            setInfo({data: response.data, count:visitCount})
+            navigate("/info")
+        }).catch((err) =>{
+            console.error('deu ruim');
             console.error(err)
-        }));
-
+        })
     }
 
     function buttonSuccess(url) {
-       
-
         let data = { url:url};
         console.log(data)
-        const requisicaoPost = axios.post("https://back-projeto-16-shortly.herokuapp.com/urls/shorten", data, config);
-        //setLoading(true)
-        requisicaoPost.then((response) => {
+        const request = axios.post("https://back-projeto-16-shortly.herokuapp.com/urls/shorten", data, config);
+        setLoading(true)
+        request.then((response) => {
             setUrl("");
             setRefreshAxios(!refreshAxios);
+            setLoading(false)
         });
-        requisicaoPost.catch((error) => {alert(error.response.data)
-          //  setLoading(false)
+        request.catch((error) => {alert(error.response.data)
+            setLoading(false)
         })
     }
 
@@ -97,7 +113,7 @@ export default function Home(){
                 <form>
                 <div className="shorten">
                 <input type="text" name="URL" placeholder="Links que cabem no bolso"  value= {url} onChange={(e) => setUrl(e.target.value)} required />
-                <button type="submit">Encurtar Link</button> </div>
+                <button type="submit">{loading ? loadingAnimation : 'Encurtar Link'}</button> </div>
                 </form>
                 <div className="urls"> Você não tem links encurtados. Insira um acima!</div>
             </Container>
@@ -115,11 +131,12 @@ export default function Home(){
             <form>
             <div className="shorten">
             <input type="text" name="URL" placeholder="Links que cabem no bolso"  value= {url} onChange={(e) => setUrl(e.target.value)} required />
-            <button type="submit">Encurtar Link</button> </div>
+            <button type="submit">{loading ? loadingAnimation : 'Encurtar Link'}</button> </div>
             </form>
+            {loadingGet ? <div className="urls" style={{alignItems:"center", justifyContent:"center"}}>{loadingAnimation2}</div> : 
             <div className="urls">{userUrls.map(({url, shortUrl, visitCount, id}) => {return(
                     <GetUrls key={id} url={url} shortUrl={shortUrl} visitCount={visitCount} id={id} />
-            )})}</div>
+            )})}</div>}
         </Container>
         
     </>
@@ -215,10 +232,6 @@ const Container = styled.div `
 
             .userUrls>p{
                 font-size:14px;
-            }
-
-            .userUrls>h1:nth-child(2):hover{
-                text-decoration: underline;
             }
 
             .delete{

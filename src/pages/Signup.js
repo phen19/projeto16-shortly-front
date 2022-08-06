@@ -24,16 +24,16 @@ export default function Signup(){
             confirmPassword: confirmPassword
                     };
         console.log(data)
-        const requisicaoPost = axios.post(
+        const request = axios.post(
           "https://back-projeto-16-shortly.herokuapp.com/signup",
           data
         );
         setLoading(true)
-        requisicaoPost.then(() => {
+        request.then(() => {
           navigate("/signin");
           
         });
-        requisicaoPost.catch((error) => {
+        request.catch((error) => {
             alert(error.response.data)
             setLoading(false)
         });

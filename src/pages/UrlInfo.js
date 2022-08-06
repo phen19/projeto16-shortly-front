@@ -1,69 +1,69 @@
-import styled from "styled-components";
-import axios from "axios";
-import { useState, useEffect, useContext } from "react";
 import UserContext from "../context/UserContext";
+import { useContext, useState} from 'react';
+import styled from "styled-components";
 import Header from "../components/Header.js";
-import Footer from "../components/Footer";
-import  {Oval}  from  'react-loader-spinner'
+import Footer from "../components/Footer.js";
+import axios from "axios";
 
-export default function Ranking(){
-    const [ranking, setRanking] = useState([])
-    const {user} = useContext(UserContext)
-    const [loading, setLoading] = useState(true)
-    let loadingAnimation = <Oval
-    height={80}
-    width={80}
-    color="#4fa94d"
-    wrapperStyle={{}}
-    wrapperClass=""
-    visible={true}
-    ariaLabel='oval-loading'
-    secondaryColor="#4fa94d"
-    strokeWidth={2}
-    strokeWidthSecondary={2}
-  
-  />
 
-    useEffect(() => {
-        const request = axios.get(`https://back-projeto-16-shortly.herokuapp.com/ranking`);
-     
+export default function URLInfo(){
+    const {info, userName} = useContext(UserContext)
+    const [refreshAxios, setRefreshAxios] = useState(false)
+
+    function goToUrl(shortUrl){
+        const request = axios.get(`https://back-projeto-16-shortly.herokuapp.com/urls/open/${shortUrl}`);
         request.then((response) =>{
-            setRanking(response.data)
-            setLoading(false)
+            window.open(response.data.split('to ')[1], "_blank")
+            setRefreshAxios(!refreshAxios)
         }).catch((err => {
             console.error('deu ruim')
             console.error(err)
-
         }));
-    },[]);
 
-    function Rank({name, linksCount, visitCount, id}){
+    }
+
+    console.log(info)
+    if (userName!==""){
         return(
             <>
-                <h3>{id}. {name} - {linksCount} links - {visitCount} visualizações</h3> 
-            </>
+            
+            <Container>
+            <Header/>
+                <Title><p>Shortly </p> <h2>🩳</h2></Title>
+                <h1>Informações URL</h1>
+              <div className="info">
+                <h3>ID</h3>
+                <h4>{info.data.id}</h4>
+                <h3> URL</h3>
+                <h4>{info.data.url}</h4>
+                <h3>URL encurtada</h3>
+                <h4 style={{cursor:"pointer", textDecoration:"underline", color:"blue"}}onClick={()=> goToUrl(info.data.shortUrl)}>{info.data.shortUrl}</h4>
+                <h3>Visitantes</h3>
+                <h4>{info.count}</h4>
+              </div>
+                <Footer/>
+            </Container>
+            
+        </>
         )
     }
 
-    console.log(user)
-    return (
+    return(
         <>
-        
+            
         <Container>
         <Header/>
             <Title><p>Shortly </p> <h2>🩳</h2></Title>
-            <h1>🏆 Ranking</h1>
-            {loading ? <div className="ranking" style={{alignItems:"center", justifyContent:"center"}}>{loadingAnimation}</div> : 
-          <div className="ranking">
-                                        {ranking.map((rank, index) => {return(
-                                            <Rank key={rank.id} name={rank.name} linksCount={rank.linksCount} visitCount={rank.visitCount} id={index+1}/>
-                                        )})}
-          </div>}
+            <h1>Informações URL</h1>
+          <div className="info">
+            <h3>Entre no nosso serviço e selecione um link encurtado para obter maiores informações da URL.</h3>
+          </div>
             <Footer/>
         </Container>
         
     </>
     )
+
 }
 
 const Container = styled.div `
@@ -141,30 +141,38 @@ const Container = styled.div `
                 margin-bottom: 42px;
             }
 
-            .ranking{
+            .info{
                 width: 1017px;
                 height: 241px;
                 display: flex;
                 flex-direction: column;
+                justify-content: center;
+                align-items: center;
                 border: 1px solid rgba(120, 177, 89, 0.25);
                 box-shadow: 0px 4px 24px rgba(120, 177, 89, 0.12);
                 border-radius: 24px 24px 0px 0px;
                 padding-left: 40px;
                 overflow:scroll;
                 box-sizing:border-box;
-                padding-top:20px;
-                padding-bottom:30px;
 
             }
 
-          .ranking>h3{
+          .info>h3{
             font-family: 'Lexend Deca', sans-serif;
             font-style: normal;
             font-weight: 500;
-            font-size: 22px;
+            font-size: 18px;
             margin-bottom:12px;
+            text-align: center;
           }
 
+          .info>h4{
+            font-family: 'Lexend Deca', sans-serif;
+            font-style: normal;
+            font-weight: 200;
+            font-size: 14px;
+            margin-bottom:12px;
+          }
 
 `
 const Title = styled.div`
