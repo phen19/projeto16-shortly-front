@@ -51,12 +51,24 @@ export default function Home(){
             <>
             <div className="line">
             <div className="userUrls" onClick={()=> urlInfo(id, visitCount)}>
-                    <h1 >{url}</h1> <h1>{shortUrl}</h1> <h1>Quantidade de visitantes: {visitCount}</h1>
+                    <h1 >{url}</h1> <h1 style={{cursor:"pointer", textDecoration:"underline"}}onClick={(e)=> goToUrl(shortUrl, e.stopPropagation()) }>{shortUrl}</h1> <h1>Quantidade de visitantes: {visitCount}</h1>
             </div>
             <div className="delete" onClick={() => removeUrl({id})}> <img src={trash} alt="trash"/></div>
             </div>
             </>
         )
+    }
+
+    function goToUrl(shortUrl){
+        const request = axios.get(`https://back-projeto-16-shortly.herokuapp.com/urls/open/${shortUrl}`);
+        request.then((response) =>{
+            window.open(response.data.split('to ')[1], "_blank")
+            setRefreshAxios(!refreshAxios)
+        }).catch((err => {
+            console.error('deu ruim')
+            console.error(err)
+        }));
+
     }
 
     function removeUrl({id}){
